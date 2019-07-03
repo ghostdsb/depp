@@ -6,14 +6,9 @@ defmodule Words do
   """
   @spec count(String.t()) :: map
   def count(sentence) do
-    pattern = :binary.compile_pattern([" ", "!", "&", "@", "$", "%", "^", ":", ",", "_"])
     sentence
-    |> String.split(pattern, trim: true)
-    |> make_map(%{})
-  end
-
-  defp make_map([],w_map), do: w_map
-  defp make_map([head|tail], w_map) do
-    make_map(tail,Map.update(w_map,String.downcase(head),1,&(&1+1)))
+    |> String.downcase()
+    |> String.split( ~r/[^[:alnum:]-]/u, trim: true)
+    |> Enum.reduce(%{},fn x,w_map -> Map.update(w_map,x,1,&(&1+1)) end)
   end
 end
