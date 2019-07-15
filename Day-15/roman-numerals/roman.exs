@@ -17,14 +17,11 @@ defmodule Roman do
   def numerals(5), do: "V"
   def numerals(4), do: "IV"
   def numerals(1), do: "I"
-  def numerals(number), do: numerals(0,Enum.at(@romaneq, 0),number,"")
-  defp numerals(_,_,0,string), do: string
-  defp numerals(id, x,number, string) do
-    numerals(
-      id+1, 
-      Enum.at(@romaneq, id+1),
-      number-(div(number,x)*x), 
-      string<>String.duplicate(numerals(x),div(number,x))
-    )
+  def numerals(0), do: ""
+
+  def numerals(number) do
+    @romaneq
+    |> Enum.reduce("", fn x,acc-> acc <> String.duplicate(numerals(x), div(number,x)) end)
   end
+
 end
