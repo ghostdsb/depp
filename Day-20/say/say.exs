@@ -1,62 +1,94 @@
 defmodule Say do
+  @words %{
+    0 => "zero",
+    1 => "one",
+    2 => "two",
+    3 => "three",
+    4 => "four",
+    5 => "five",
+    6 => "six",
+    7 => "seven",
+    8 => "eight",
+    9 => "nine",
+    10 => "ten",
+    11 => "eleven",
+    12 => "twelve",
+    13 => "thirteen",
+    14 => "fourteen",
+    15 => "fifteen",
+    16 => "sixteen",
+    17 => "seventeen",
+    18 => "eighteen",
+    19 => "nineteen",
+    20 => "twenty",
+    30 => "thirty",
+    40 => "forty",
+    50 => "fifty",
+    60 => "sixty",
+    70 => "seventy",
+    80 => "eighty",
+    90 => "ninety"
+  }
+  
+  @hundred " hundred "
+  @thousand " thousand "
+  @million " million "
+  @billion " billion "
+  
   @doc """
   Translate a positive integer into English.
   """
   @spec in_english(integer) :: {atom, String.t()}
-  def in_english(number) when number < 0 or number > 99_999_999_999, do: {:error, "number is out of range"}
-  def in_english(0), do: "zero"
-  def in_english(1), do: "one"
-  def in_english(2), do: "two"
-  def in_english(3), do: "three"
-  def in_english(4), do: "four"
-  def in_english(5), do: "five"
-  def in_english(6), do: "six"
-  def in_english(7), do: "seven"
-  def in_english(8), do: "eight"
-  def in_english(9), do: "nine"
-  def in_english(10), do: "ten"
-  def in_english(11), do: "eleven"
-  def in_english(12), do: "twelve"
-  def in_english(13), do: "thirteen"
-  def in_english(14), do: "fourteen"
-  def in_english(15), do: "fifteen"
-  def in_english(16), do: "sixteen"
-  def in_english(17), do: "seventeen"
-  def in_english(18), do: "eighteen"
-  def in_english(19), do: "nineteen"
-  def in_english(20), do: "twenty"
-  def in_english(30), do: "thirty"
-  def in_english(40), do: "forty"
-  def in_english(50), do: "fifty"
-  def in_english(60), do: "sixty"
-  def in_english(70), do: "seventy"
-  def in_english(80), do: "eighty"
-  def in_english(90), do: "ninety"
-  def in_english(100), do: "hundred"
-  def in_english(1_000), do: "thousand"
-  def in_english(1_000_000), do: "million"
-  def in_english(1_000_000_000), do: "billion"
-  def in_english(number) do
+  def in_english(0), do: {:ok, "zero"}
+  def in_english(number) when number >= 0 and number <= 999_999_999_999 do
     number
-    |> three_groups
+    |> Integer.digits
+    |> Enum.reverse
+    |> Enum.chunk_every(3) 
+    |> Enum.reverse 
+    |> Enum.map(fn x -> Enum.reverse(x) end)
+    |> Enum.map(fn x -> Enum.join(x) |> String.to_integer |> three_digit_groups end)
+    |> Enum.reverse
+    |> Enum.with_index
+    |> Enum.reverse
+    |> combiner("")
+    |> say
+  end
+  def in_english(_) , do: {:error, "number is out of range"}
+
+  defp say(word), do: {:ok, String.trim(word)} 
+
+  defp combiner([], word), do: word
+  defp combiner([{"zero", _}|t], word), do: combiner(t, word)
+  defp combiner([{name, 3}|t], word), do: combiner(t, word<>name<>@billion)
+  defp combiner([{name, 2}|t], word), do: combiner(t, word<>name<>@million)
+  defp combiner([{name, 1}|t], word), do: combiner(t, word<>name<>@thousand)
+  defp combiner([{name, 0}|_], word), do: word<>name
+
+  defp three_digit_helper(number) do
+    number |> three_digit_groups
   end
 
-  defp twos_group(number) do
-    number
+  defp two_digit_group(number) do
+    place_value_list = number
     |> Integer.digits
     |> Enum.reverse
     |> Enum.with_index
     |> Enum.reverse
     |> Enum.reduce([],fn {k,v},acc -> acc ++ [k*power(10,v)] end)
-    |> Enum.map(fn x-> in_english(x) end)
-    |> Enum.join("-")
+    cond do
+      number < 20 -> @words[number]
+      tl(place_value_list) === [0] -> @words[hd(place_value_list)]
+      true -> Enum.map(place_value_list,fn x-> @words[x] end) |> Enum.join("-")
+    end
   end
 
-  defp three_groups(number) do
+  defp three_digit_groups(number) do
     digit_list = number |> Integer.digits
     cond do
-      length(digit_list) < 3 -> twos_group(rem(number, 100))
-      true -> in_english(div(number,100)) <> " hundred and " <> in_english(rem(number, 100))
+      length(digit_list) < 3 -> two_digit_group(rem(number, 100))
+      tl(digit_list) === [0,0] -> three_digit_helper(div(number,100)) <> @hundred
+      true -> three_digit_helper(div(number,100)) <> @hundred <> three_digit_helper(rem(number, 100))
     end
   end
 
