@@ -69,7 +69,7 @@ defmodule RobotSimulator do
     cond do
       not valid_direction?(direction) -> {:error, "invalid direction"}
       not valid_position?(position)   -> {:error, "invalid position"}
-      true ->  %{:direction => direction,   :position => position}
+      true ->  {:ok, %{:direction => direction,   :position => position}}
     end
   end
   defp new(_, _), do: {:error, "invalid position"}
