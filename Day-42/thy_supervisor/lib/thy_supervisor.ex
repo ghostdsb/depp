@@ -37,7 +37,7 @@ defmodule ThySupervisor do
   #############
 
   @spec init(maybe_improper_list) :: {:ok, any}
-  def init(child_spec_list) do
+  def init([child_spec_list]) do
     Process.flag(:trap_exit, true)
     state = child_spec_list |> start_children |> Enum.into(Map.new)
     {:ok, state}
@@ -91,6 +91,29 @@ defmodule ThySupervisor do
     {:noreply, new_state}
   end
 
+  def handle_info({:EXIT, from, :normal}, state) do
+    new_state = state |> Map.delete(from)
+    {:noreply, new_state}
+  end
+
+  def handle_info({:EXIT, old_pid, _reason}, state) do
+    case Map.fetch(state, old_pid) do
+      {:ok, child_specs} ->
+        case restart(old_pid, child_specs) do
+          {:ok, {new_pid, child_specs}} ->
+            new_state = state |> Map.delete(old_pid) |> Map.put(new_pid, child_specs)
+            {:noreply, new_state}
+          _ -> {:noreply, state}
+        end
+      _ -> {:noreply, state}
+    end
+  end
+
+  def terminate(_reason, state) do
+    terminate_children(state)
+    :ok
+  end
+
 
   ########
   #Helper#
@@ -113,9 +136,15 @@ defmodule ThySupervisor do
     end
   end
 
+  defp terminate_children([]), do: :ok
+  defp terminate_children(child_specs) do
+    child_specs
+    |> Enum.each(fn {pid, _} -> terminate_child(pid) end)
+  end
+
   defp terminate_child(child_pid) do
     Process.exit(child_pid, :kill)
-    # :ok
+    :ok
   end
 
   defp restart(child_pid, child_spec) do
