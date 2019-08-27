@@ -15,4 +15,17 @@ defmodule MathUtil do
   defp to_binary(1, bits), do: bits
   defp to_binary(val, bits), do: to_binary(div(val, 2), [rem(val, 2) | bits])
 
+
+  def hcf(a,b) when a>0 and b>0 do
+    cond do
+      a > b -> hcf(a,b, rem(a, b))
+      true  -> hcf(b,a, rem(b, a))
+    end
+  end
+  defp hcf(_,h,0), do: h
+  defp hcf(_,b,r), do: hcf(b,r, rem(b,r))
+
+  def lcm(a,b) when a>0 and b>0 do
+    div( (a*b), hcf(a,b))
+  end
 end
