@@ -28,4 +28,12 @@ defmodule MathUtil do
   def lcm(a,b) when a>0 and b>0 do
     div( (a*b), hcf(a,b))
   end
+
+  # MathUtil.transpose([[1,2,3],[4,5,6]]) -> [[1,4],[2,5],[3,6]]
+
+  def transpose(mat) do
+    mat
+    |> List.zip
+    |> Enum.map(fn x -> Tuple.to_list(x) end)
+  end
 end
