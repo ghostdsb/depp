@@ -36,4 +36,15 @@ defmodule MathUtil do
     |> List.zip
     |> Enum.map(fn x -> Tuple.to_list(x) end)
   end
+
+  def matrix_multiplication(mat1, mat2) do
+    mat1
+    |> Enum.map(fn r -> mat2 |> transpose |> Enum.map(fn c -> Enum.zip(r,c) end) end)
+    |> Enum.map(fn x -> Enum.map(x,fn el-> dot(el) end)end)
+  end
+
+  def dot(list) do
+    list
+    |> Enum.reduce(0, fn {a,b}, acc -> acc + a*b end)
+  end
 end
