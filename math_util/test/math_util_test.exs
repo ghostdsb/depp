@@ -15,11 +15,10 @@ defmodule MathUtilTest do
   end
 
   test "2^3" do
-    assert MathUtil.power(2,3) == 8
+    assert MathUtil.power(2, 3) == 8
   end
 
   test "12^2" do
-    assert MathUtil.power(12,2) == 144
+    assert MathUtil.power(12, 2) == 144
   end
-
 end
