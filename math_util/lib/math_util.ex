@@ -41,6 +41,17 @@ defmodule MathUtil do
     end
   end
 
+  def dot_product(vector1, vector2) do
+    vector1
+    |> Enum.zip(vector2)
+    |> Enum.reduce(0, fn {i,j}, acc -> acc + i*j end)
+  end
+
+  def cross_product(vector1, vector2) do
+    {[x1,y1,z1],[x2,y2,z2]} = {standardise_vector(vector1), standardise_vector(vector2)}
+    [y1*z2 - z1*y2, z1*x2 - x1*z2, x1*y2 - y1*x2]
+  end
+
   defp multiply(mat1, mat2) do
     mat1
     |> Enum.map(fn r -> mat2 |> transpose |> Enum.map(fn c -> Enum.zip(r, c) end) end)
@@ -55,8 +66,13 @@ defmodule MathUtil do
     mat |> hd |> length
   end
 
-  def dot(list) do
+  defp standardise_vector([x]), do: [x, 0, 0]
+  defp standardise_vector([x,y]), do: [x, y, 0]
+  defp standardise_vector(rest), do: rest
+
+  defp dot(list) do
     list
     |> Enum.reduce(0, fn {a, b}, acc -> acc + a * b end)
   end
+
 end
